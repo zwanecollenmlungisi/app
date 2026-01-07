@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>See U | Premium Dating</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #FF3366;
+            --primary-dark: #E62E5C;
+            --success: #10B981;
+            --dark: #0F172A;
+            --dark-light: #1E293B;
+            --light: #F8FAFC;
+            --gray-400: #9CA3AF;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--dark); color: var(--light); min-height: 100vh; }
+
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .loading-logo { font-size: 5rem; color: var(--primary); margin-bottom: 1.5rem; animation: heartbeat 1.4s infinite; }
+        .loading-text { font-family: 'Montserrat'; font-size: 3rem; font-weight: 900; color: var(--primary); }
+        @keyframes heartbeat { 
+            0% { transform: scale(1); } 
+            14% { transform: scale(1.3); } 
+            28% { transform: scale(1); } 
+            42% { transform: scale(1.3); } 
+            70% { transform: scale(1); } 
+        }
+
+        /* Screens */
+        .screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark); display: none; flex-direction: column;
+            overflow-y: auto;
+        }
+        .screen.active { display: flex; }
+
+        /* Header */
+        .app-header {
+            padding: 1rem 1.5rem; background: rgba(30, 41, 59, 0.95);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .header-title {
+            font-size: 1.5rem; font-weight: 700; color: var(--primary);
+        }
+        .back-btn {
+            background: none; border: none; color: var(--gray-400);
+            font-size: 1.2rem; cursor: pointer; margin-right: 1rem;
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1); 
+            border: none; 
+            color: var(--gray-400);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        /* Auth */
+        .auth-container {
+            flex: 1; display: flex; justify-content: center;
+            align-items: center; padding: 1.5rem;
+        }
+        .auth-card {
+            background: var(--dark-light); border-radius: var(--radius);
+            padding: 2rem; width: 100%; max-width: 400px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .auth-title {
+            font-size: 1.75rem; margin-bottom: 1.5rem;
+            text-align: center; color: var(--light);
+        }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; margin-bottom: 0.5rem; color: var(--light); font-weight: 500; }
+        .form-input {
+            width: 100%; padding: 0.875rem 1rem;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: var(--light); font-size: 1rem;
+        }
+        .form-input:focus { outline: none; border-color: var(--primary); }
+        .form-textarea {
+            width: 100%; padding: 0.875rem 1rem;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: var(--light); font-size: 1rem;
+            min-height: 100px; resize: vertical; font-family: 'Inter', sans-serif;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.75rem; padding: 0.875rem 1.5rem; background: var(--primary);
+            color: white; border: none; border-radius: 8px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; width: 100%; margin-top: 0.5rem;
+        }
+        .btn:hover { background: var(--primary-dark); }
+        .btn-secondary { background: rgba(255,255,255,0.1); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+        /* Links */
+        .auth-links { text-align: center; margin-top: 1.5rem; color: var(--gray-400); }
+        .auth-link { color: var(--primary); cursor: pointer; font-weight: 500; margin-left: 0.5rem; }
+
+        /* Payment */
+        .payment-amount { font-size: 3rem; font-weight: 900; color: var(--primary); text-align: center; margin: 1rem 0; }
+        .benefits-list { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .benefit-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; color: var(--gray-400); }
+        .benefit-item i { color: var(--success); }
+
+        /* PROFILE PAGE */
+        .profile-container {
+            flex: 1; padding: 1.5rem; overflow-y: auto;
+        }
+        .profile-header {
+            display: flex; align-items: center; gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .profile-avatar {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: var(--primary); display: flex;
+            align-items: center; justify-content: center;
+            font-size: 2.5rem; color: white;
+            border: 3px solid var(--primary);
+            position: relative;
+        }
+        .profile-avatar img {
+            width: 100%; height: 100%; border-radius: 50%;
+            object-fit: cover;
+        }
+        .profile-info h2 {
+            font-size: 1.75rem; color: var(--light); margin-bottom: 0.25rem;
+        }
+        .profile-info p {
+            color: var(--gray-400); margin-bottom: 0.5rem;
+        }
+        .premium-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.15); color: var(--success);
+            padding: 0.5rem 1rem; border-radius: 50px; font-weight: 600; margin-top: 0.5rem;
+        }
+        .edit-profile-btn {
+            background: rgba(255,255,255,0.1); color: var(--light);
+            border: none; padding: 0.5rem 1rem; border-radius: 6px;
+            cursor: pointer; font-size: 0.9rem; margin-top: 0.5rem;
+        }
+
+        /* Media Grid */
+        .media-section {
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            font-size: 1.25rem; color: var(--light); margin-bottom: 1rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .add-media-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .media-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .media-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        .media-item {
+            aspect-ratio: 1; border-radius: var(--radius);
+            background: var(--dark-light); border: 2px solid transparent;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; color: var(--gray-400); cursor: pointer;
+            overflow: hidden; position: relative;
+        }
+        .media-item:hover { border-color: var(--primary); }
+        .media-item i { font-size: 2rem; margin-bottom: 0.5rem; }
+        .media-item img, .media-item video {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        .media-item .remove-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            background: rgba(0,0,0,0.7); color: white; border: none;
+            width: 24px; height: 24px; border-radius: 50%;
+            cursor: pointer; display: none;
+        }
+        .media-item:hover .remove-btn { display: block; }
+
+        /* Business/Service Feature */
+        .business-section {
+            background: var(--dark-light); border-radius: var(--radius);
+            padding: 1.5rem; margin-bottom: 2rem;
+            border: 1px solid rgba(255, 51, 102, 0.2);
+        }
+        .business-toggle {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .toggle-switch {
+            position: relative; display: inline-block;
+            width: 60px; height: 30px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 30px;
+        }
+        .toggle-slider:before {
+            position: absolute; content: "";
+            height: 22px; width: 22px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .toggle-slider { background-color: var(--success); }
+        input:checked + .toggle-slider:before { transform: translateX(30px); }
+        .business-form { display: none; }
+        .business-form.active { display: block; }
+
+        /* Business Card for other users to see */
+        .business-card {
+            background: linear-gradient(135deg, rgba(255, 51, 102, 0.1), rgba(16, 185, 129, 0.1));
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            position: relative;
+        }
+        .business-card::before {
+            content: "💼 Business/Service";
+            position: absolute;
+            top: -10px;
+            left: 1rem;
+            background: var(--dark);
+            padding: 0 0.5rem;
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .business-card h4 {
+            color: var(--light);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .business-card p {
+            color: var(--gray-400);
+            margin-bottom: 0.5rem;
+        }
+        .business-contact {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        /* DISCOVER PAGE */
+        .discover-container {
+            flex: 1; padding: 1.5rem; overflow-y: auto;
+        }
+        .user-card {
+            background: var(--dark-light); border-radius: var(--radius);
+            margin-bottom: 1.5rem; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-photos {
+            position: relative; height: 400px; overflow: hidden;
+        }
+        .user-photo {
+            width: 100%; height: 100%; object-fit: cover;
+            display: none;
+        }
+        .user-photo.active { display: block; }
+        .photo-nav {
+            position: absolute; top: 0; width: 100%; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px; pointer-events: none;
+        }
+        .nav-btn {
+            background: rgba(0,0,0,0.5); width: 40px; height: 40px;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; color: white; cursor: pointer;
+            pointer-events: all; backdrop-filter: blur(5px);
+        }
+        .photo-dots {
+            position: absolute; bottom: 20px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 8px;
+        }
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.5); cursor: pointer;
+        }
+        .dot.active { background: white; }
+        .user-info {
+            padding: 1.5rem;
+        }
+        .user-name {
+            font-size: 1.5rem; font-weight: 700; color: var(--light);
+            margin-bottom: 0.25rem;
+        }
+        .user-age {
+            color: var(--gray-400); margin-bottom: 0.5rem;
+        }
+        .user-bio {
+            margin: 1rem 0; line-height: 1.5; color: var(--light);
+        }
+        .interests {
+            display: flex; flex-wrap: wrap; gap: 8px; margin: 1rem 0;
+        }
+        .interest-tag {
+            background: rgba(255,51,102,0.15); color: var(--primary);
+            padding: 0.375rem 0.75rem; border-radius: 20px;
+            font-size: 0.875rem;
+        }
+        .video-player {
+            width: 100%; border-radius: 8px; overflow: hidden;
+            margin: 1rem 0;
+        }
+        .video-player video {
+            width: 100%; border-radius: 8px;
+        }
+        .action-buttons {
+            display: flex; gap: 0.75rem; margin-top: 1.5rem;
+        }
+        .action-buttons .btn {
+            flex: 1; margin: 0;
+        }
+        .like-btn { background: var(--success); }
+        .whatsapp-btn { background: #25D366; }
+
+        /* MATCHES PAGE */
+        .matches-container {
+            flex: 1; padding: 1.5rem; overflow-y: auto;
+        }
+        .matches-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        @media (min-width: 768px) {
+            .matches-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .match-card {
+            background: var(--dark-light); border-radius: var(--radius);
+            padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .match-photo {
+            width: 80px; height: 80px; border-radius: 50%;
+            object-fit: cover; margin: 0 auto 0.75rem;
+            border: 3px solid var(--primary);
+        }
+
+        /* Dashboard Navigation */
+        .dashboard-nav {
+            display: flex; background: var(--dark-light); border-radius: var(--radius);
+            padding: 0.25rem; margin: 1rem 1.5rem;
+        }
+        .nav-btn {
+            flex: 1; padding: 1rem; text-align: center;
+            background: transparent; border: none; color: var(--gray-400);
+            border-radius: 8px; cursor: pointer; font-weight: 500;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 0.5rem; font-size: 0.9rem;
+        }
+        .nav-btn i { font-size: 1.5rem; }
+        .nav-btn.active {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--primary);
+            box-shadow: inset 0 0 0 1px rgba(255, 51, 102, 0.3);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none; align-items: center;
+            justify-content: center; z-index: 2000; padding: 1rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--dark-light); border-radius: var(--radius);
+            padding: 2rem; max-width: 500px; width: 100%;
+            border: 1px solid rgba(255,255,255,0.15); text-align: center;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 1.5rem;
+        }
+        .modal-title {
+            font-size: 1.5rem; color: var(--light);
+        }
+        .close-modal {
+            background: none; border: none; color: var(--gray-400);
+            font-size: 1.5rem; cursor: pointer;
+        }
+        .match-heart { font-size: 4rem; color: var(--success); margin-bottom: 1rem; }
+        .whatsapp-box {
+            background: rgba(255,255,255,0.05); border-radius: var(--radius);
+            padding: 1.25rem; margin: 1.5rem 0; border: 1px solid rgba(37, 211, 102, 0.3);
+        }
+        .phone-number { font-size: 1.25rem; font-weight: 700; color: var(--primary); margin: 0.5rem 0; }
+
+        @media (max-width: 480px) {
+            .auth-card { padding: 1.5rem; }
+            .profile-avatar { width: 120px; height: 120px; }
+            .user-photos { height: 300px; }
+            .nav-btn span { display: none; }
+            .nav-btn i { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loading-logo"><i class="fas fa-heart"></i></div>
+        <div class="loading-text">See U</div>
+    </div>
+
+    <!-- Sign In Page -->
+    <div id="signinScreen" class="screen">
+        <div class="app-header">
+            <div class="header-title">See U</div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2 class="auth-title">Welcome Back</h2>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="demo@seeu.com" value="demo@seeu.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" value="demo123">
+                </div>
+                <button class="btn" onclick="signIn()"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+                
+                <!-- DEMO BUTTON -->
+                <button class="btn btn-secondary" onclick="useDemo()" style="margin-top: 1rem;">
+                    <i class="fas fa-bolt"></i> Quick Demo Login
+                </button>
+                
+                <div class="auth-links">
+                    New here? <span class="auth-link" onclick="showScreen('signupScreen')">Sign Up</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign Up Page -->
+    <div id="signupScreen" class="screen">
+        <div class="app-header">
+            <button class="back-btn" onclick="showScreen('signinScreen')"><i class="fas fa-arrow-left"></i></button>
+            <div class="header-title">Join See U</div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2 class="auth-title">Create Account</h2>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="signupName" placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="signupEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">WhatsApp Number</label>
+                    <input type="tel" class="form-input" id="signupPhone" placeholder="+27 12 345 6789">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="signupPassword" placeholder="At least 8 characters">
+                </div>
+                <button class="btn" onclick="signUp()"><i class="fas fa-arrow-right"></i> Continue to Payment</button>
+                <div class="auth-links">
+                    Have an account? <span class="auth-link" onclick="showScreen('signinScreen')">Sign In</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Page -->
+    <div id="paymentScreen" class="screen">
+        <div class="app-header">
+            <button class="back-btn" onclick="showScreen('signupScreen')"><i class="fas fa-arrow-left"></i></button>
+            <div class="header-title">Premium Access</div>
+        </div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2 class="auth-title">Unlock Premium</h2>
+                <p style="text-align: center; color: var(--gray-400); margin-bottom: 0.5rem;">Annual Subscription</p>
+                <div class="payment-amount">R289.99</div>
+                
+                <div class="benefits-list">
+                    <div class="benefit-item"><i class="fas fa-check-circle"></i> WhatsApp number sharing</div>
+                    <div class="benefit-item"><i class="fas fa-check-circle"></i> Unlimited matches</div>
+                    <div class="benefit-item"><i class="fas fa-check-circle"></i> Priority visibility</div>
+                    <div class="benefit-item"><i class="fas fa-check-circle"></i> Verified profile badge</div>
+                    <div class="benefit-item"><i class="fas fa-check-circle"></i> 8 Photos + 90-Second Video</div>
+                    <div class="benefit-item"><i class="fas fa-check-circle"></i> Business/Service Feature</div>
+                </div>
+                
+                <button class="btn" onclick="processPayment()"><i class="fas fa-lock"></i> Pay R289.99</button>
+                
+                <button class="btn btn-secondary" onclick="showScreen('signupScreen')" style="margin-top: 1rem;">
+                    <i class="fas fa-arrow-left"></i> Back to Sign Up
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD PAGES -->
+
+    <!-- Profile Page -->
+    <div id="profilePage" class="screen">
+        <div class="app-header">
+            <div class="header-title">My Profile</div>
+            <button class="logout-btn" onclick="logout()" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="dashboard-nav">
+            <button class="nav-btn active" onclick="showScreen('profilePage')">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </button>
+            <button class="nav-btn" onclick="showScreen('discoverPage')">
+                <i class="fas fa-search"></i>
+                <span>Discover</span>
+            </button>
+            <button class="nav-btn" onclick="showScreen('matchesPage')">
+                <i class="fas fa-heart"></i>
+                <span>Matches</span>
+            </button>
+        </div>
+        
+        <!-- Profile Content -->
+        <div class="profile-container" id="profileContent">
+            <!-- Profile content will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Discover Page -->
+    <div id="discoverPage" class="screen">
+        <div class="app-header">
+            <div class="header-title">Discover</div>
+            <button class="logout-btn" onclick="logout()" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="dashboard-nav">
+            <button class="nav-btn" onclick="showScreen('profilePage')">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </button>
+            <button class="nav-btn active" onclick="showScreen('discoverPage')">
+                <i class="fas fa-search"></i>
+                <span>Discover</span>
+            </button>
+            <button class="nav-btn" onclick="showScreen('matchesPage')">
+                <i class="fas fa-heart"></i>
+                <span>Matches</span>
+            </button>
+        </div>
+        
+        <!-- Discover Content -->
+        <div class="discover-container" id="discoverContent">
+            <!-- User cards will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Matches Page -->
+    <div id="matchesPage" class="screen">
+        <div class="app-header">
+            <div class="header-title">My Matches</div>
+            <button class="logout-btn" onclick="logout()" title="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="dashboard-nav">
+            <button class="nav-btn" onclick="showScreen('profilePage')">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+            </button>
+            <button class="nav-btn" onclick="showScreen('discoverPage')">
+                <i class="fas fa-search"></i>
+                <span>Discover</span>
+            </button>
+            <button class="nav-btn active" onclick="showScreen('matchesPage')">
+                <i class="fas fa-heart"></i>
+                <span>Matches</span>
+            </button>
+        </div>
+        
+        <!-- Matches Content -->
+        <div class="matches-container">
+            <div class="matches-grid" id="matchesList">
+                <!-- Matches will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Profile</h3>
+                <button class="close-modal" onclick="closeModal('editProfileModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" id="editName">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Bio</label>
+                <textarea class="form-textarea" id="editBio" placeholder="Tell others about yourself"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Age</label>
+                <input type="number" class="form-input" id="editAge" min="18" max="100">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-input" id="editLocation" placeholder="Your city">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Interests (comma separated)</label>
+                <input type="text" class="form-input" id="editInterests" placeholder="e.g., hiking, music, travel">
+            </div>
+            
+            <button class="btn" onclick="saveProfile()">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- Photo Upload Modal -->
+    <div id="uploadPhotoModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Upload Photos</h3>
+                <button class="close-modal" onclick="closeModal('uploadPhotoModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <p style="color: var(--gray-400); margin-bottom: 1.5rem;">
+                You can upload up to 8 photos. Drag & drop or click to select.
+            </p>
+            
+            <div class="form-group">
+                <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                <div style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer;" 
+                     onclick="document.getElementById('photoInput').click()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 1rem;"></i>
+                    <p style="color: var(--light);">Drag & drop photos here</p>
+                    <p style="color: var(--gray-400); font-size: 0.9rem;">or click to browse</p>
+                </div>
+            </div>
+            
+            <div id="photoPreview" style="margin-top: 1rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;"></div>
+            
+            <button class="btn" onclick="uploadPhotos()" style="margin-top: 1.5rem;">
+                <i class="fas fa-upload"></i> Upload Photos
+            </button>
+        </div>
+    </div>
+
+    <!-- Video Upload Modal -->
+    <div id="uploadVideoModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Upload 90-Second Video</h3>
+                <button class="close-modal" onclick="closeModal('uploadVideoModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <p style="color: var(--gray-400); margin-bottom: 1.5rem;">
+                Upload a 90-second video profile. Max file size: 100MB
+            </p>
+            
+            <div class="form-group">
+                <input type="file" id="videoInput" accept="video/*" style="display: none;">
+                <div style="border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer;" 
+                     onclick="document.getElementById('videoInput').click()">
+                    <i class="fas fa-video" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 1rem;"></i>
+                    <p style="color: var(--light);">Select a video file</p>
+                    <p style="color: var(--gray-400); font-size: 0.9rem;">MP4, MOV, AVI up to 100MB</p>
+                </div>
+            </div>
+            
+            <div id="videoPreview" style="margin-top: 1rem;"></div>
+            
+            <button class="btn" onclick="uploadVideo()" style="margin-top: 1.5rem;">
+                <i class="fas fa-upload"></i> Upload Video
+            </button>
+        </div>
+    </div>
+
+    <!-- Match Modal -->
+    <div id="matchModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="match-heart"><i class="fas fa-heart"></i></div>
+            <h2 style="margin-bottom: 0.5rem;">It's a Match! 🎉</h2>
+            <p style="color: var(--gray-400); margin-bottom: 1.5rem;">
+                You and <span id="matchUserName" style="color: var(--primary); font-weight: 700;">Alex Johnson</span> liked each other!
+            </p>
+            
+            <div class="whatsapp-box">
+                <div style="color: var(--light); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <i class="fab fa-whatsapp" style="color: #25D366;"></i> WhatsApp Number:
+                </div>
+                <div id="matchUserPhone" class="phone-number">+27 11 122 2333</div>
+            </div>
+            
+            <button class="btn" onclick="openWhatsApp()" style="background: #25D366; margin-bottom: 0.75rem;">
+                <i class="fab fa-whatsapp"></i> Open WhatsApp & Chat
+            </button>
+            <button class="btn btn-secondary" onclick="closeModal('matchModal')">Continue Matching</button>
+        </div>
+    </div>
+
+    <script>
+        // SIMPLE APP STATE - NO SUPABASE
+        let currentUser = null;
+        let currentProfile = null;
+        let sampleUsers = [];
+        
+        // Initialize app - SIMPLE VERSION
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('App loaded - simple version');
+            
+            // Initialize sample users with business info
+            initializeSampleUsers();
+            
+            // Hide loading screen after 1.5 seconds and show signin
+            setTimeout(function() {
+                document.getElementById('loadingScreen').style.opacity = '0';
+                setTimeout(function() {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    showScreen('signinScreen');
+                }, 500);
+            }, 1500);
+        });
+        
+        // Initialize sample users with business info
+        function initializeSampleUsers() {
+            sampleUsers = [
+                {
+                    id: 1,
+                    name: "Sarah Johnson",
+                    age: 34,
+                    location: "Johannesburg",
+                    phone: "+27123456789",
+                    photos: [
+                        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=600&fit=crop"
+                    ],
+                    video: "https://assets.mixkit.co/videos/preview/mixkit-woman-walking-her-dog-in-a-park-39856-large.mp4",
+                    bio: "Adventurous soul who loves hiking and photography. Looking for meaningful connections.",
+                    interests: ["Hiking", "Photography", "Travel", "Music", "Art"],
+                    businessInfo: {
+                        name: "Sarah's Photography Studio",
+                        description: "Professional portrait and landscape photography. Specializing in outdoor and adventure shoots.",
+                        contact: "sarah@photography.com / +27123456789"
+                    },
+                    is_premium: true
+                },
+                {
+                    id: 2,
+                    name: "David Smith",
+                    age: 32,
+                    location: "Cape Town",
+                    phone: "+27876543210",
+                    photos: [
+                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=600&fit=crop"
+                    ],
+                    video: "https://assets.mixkit.co/videos/preview/mixkit-man-exercising-in-the-park-39858-large.mp4",
+                    bio: "Fitness enthusiast and entrepreneur. Love outdoor activities and trying new restaurants.",
+                    interests: ["Fitness", "Business", "Food", "Travel", "Sports"],
+                    businessInfo: {
+                        name: "FitLife Personal Training",
+                        description: "Certified personal trainer offering customized workout plans and nutrition guidance.",
+                        contact: "david@fitlife.co.za / +27876543210"
+                    },
+                    is_premium: true
+                },
+                {
+                    id: 3,
+                    name: "Amina Patel",
+                    age: 28,
+                    location: "Durban",
+                    phone: "+27711223344",
+                    photos: [
+                        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=600&fit=crop",
+                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop"
+                    ],
+                    video: "https://assets.mixkit.co/videos/preview/mixkit-woman-reading-a-book-in-a-cafe-39860-large.mp4",
+                    bio: "Yoga instructor and wellness coach. Passionate about healthy living and mindfulness.",
+                    interests: ["Yoga", "Wellness", "Reading", "Cooking", "Nature"],
+                    businessInfo: {
+                        name: "ZenYoga Studio",
+                        description: "Offering yoga classes, meditation sessions, and wellness workshops for all levels.",
+                        contact: "amina@zenyoga.co.za / +27711223344"
+                    },
+                    is_premium: true
+                }
+            ];
+        }
+        
+        // Show screen function - SIMPLE
+        function showScreen(screenId) {
+            console.log('Showing screen:', screenId);
+            
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Show requested screen
+            const screen = document.getElementById(screenId);
+            if (screen) {
+                screen.classList.add('active');
+                
+                // Load content for specific screens
+                if (screenId === 'profilePage') {
+                    loadProfilePage();
+                } else if (screenId === 'discoverPage') {
+                    loadDiscoverPage();
+                } else if (screenId === 'matchesPage') {
+                    loadMatchesPage();
+                }
+            }
+            
+            // Update navigation
+            updateNav(screenId);
+        }
+        
+        // Update navigation
+        function updateNav(activePage) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const activeBtn = document.querySelector(`.nav-btn[onclick*="${activePage}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+        }
+        
+        // QUICK DEMO LOGIN
+        function useDemo() {
+            console.log('Using demo login');
+            
+            // Create demo user
+            currentUser = {
+                id: 'demo_123',
+                name: 'Demo User',
+                email: 'demo@seeu.com',
+                phone: '+27123456789'
+            };
+            
+            currentProfile = {
+                id: 'demo_123',
+                name: 'Demo User',
+                email: 'demo@seeu.com',
+                phone: '+27123456789',
+                bio: 'This is a demo profile for testing SeeU features. I love hiking, photography, and meeting new people!',
+                age: 28,
+                location: 'Johannesburg, SA',
+                interests: ['hiking', 'music', 'travel', 'photography', 'food'],
+                photos: [
+                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+                    'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop'
+                ],
+                video: 'https://assets.mixkit.co/videos/preview/mixkit-man-exercising-in-the-park-39858-large.mp4',
+                businessInfo: {
+                    name: "Demo Web Design Services",
+                    description: "Professional website design and development for small businesses. Creating beautiful, responsive websites that drive results.",
+                    contact: "demo@webdesign.com / +27123456789"
+                },
+                is_premium: true
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('seeu_user', JSON.stringify(currentUser));
+            localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+            
+            // Go to profile page
+            showScreen('profilePage');
+        }
+        
+        // Sign In - SIMPLE
+        function signIn() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Check if using demo credentials
+            if (email === 'demo@seeu.com' && password === 'demo123') {
+                useDemo();
+                return;
+            }
+            
+            // Try to load from localStorage
+            const savedUser = localStorage.getItem('seeu_user');
+            const savedProfile = localStorage.getItem('seeu_profile');
+            
+            if (savedUser && savedProfile) {
+                currentUser = JSON.parse(savedUser);
+                currentProfile = JSON.parse(savedProfile);
+                
+                if (currentProfile.is_premium) {
+                    showScreen('profilePage');
+                } else {
+                    showScreen('paymentScreen');
+                }
+            } else {
+                alert('Account not found. Please use demo credentials or sign up.');
+            }
+        }
+        
+        // Sign Up - SIMPLE
+        function signUp() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const phone = document.getElementById('signupPhone').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            
+            if (!name || !email || !phone || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters');
+                return;
+            }
+            
+            // Create new user
+            currentUser = {
+                id: 'user_' + Date.now(),
+                name: name,
+                email: email,
+                phone: phone
+            };
+            
+            currentProfile = {
+                id: currentUser.id,
+                name: name,
+                email: email,
+                phone: phone,
+                bio: '',
+                age: null,
+                location: '',
+                interests: [],
+                photos: [],
+                video: null,
+                businessInfo: null,
+                is_premium: false
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('seeu_user', JSON.stringify(currentUser));
+            localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+            
+            showScreen('paymentScreen');
+        }
+        
+        // Process Payment - SIMPLE
+        function processPayment() {
+            currentProfile.is_premium = true;
+            localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+            
+            alert('Payment successful! Welcome to See U Premium.');
+            showScreen('profilePage');
+        }
+        
+        // Load Profile Page - SIMPLE
+        function loadProfilePage() {
+            const container = document.getElementById('profileContent');
+            
+            if (!currentProfile) {
+                container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--gray-400);">No profile loaded</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-avatar" onclick="openModal('editProfileModal')">
+                        ${currentProfile.photos && currentProfile.photos.length > 0 ? 
+                            `<img src="${currentProfile.photos[0]}" alt="Profile">` :
+                            `<i class="fas fa-user"></i>`
+                        }
+                    </div>
+                    <div class="profile-info">
+                        <h2>${currentProfile.name}</h2>
+                        <p>${currentProfile.email}</p>
+                        <p>${currentProfile.phone || ''}</p>
+                        ${currentProfile.bio ? `<p style="color: var(--gray-300); margin: 0.5rem 0;">${currentProfile.bio}</p>` : ''}
+                        ${currentProfile.age ? `<p style="color: var(--gray-400);">${currentProfile.age} years • ${currentProfile.location || ''}</p>` : ''}
+                        ${currentProfile.is_premium ? `
+                            <div class="premium-badge"><i class="fas fa-crown"></i> Premium Member</div>
+                        ` : ''}
+                        <button class="edit-profile-btn" onclick="openModal('editProfileModal')">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Photos Section -->
+                <div class="media-section">
+                    <div class="section-title">
+                        <span>Photos (8 maximum)</span>
+                        <button class="add-media-btn" onclick="openModal('uploadPhotoModal')">
+                            <i class="fas fa-plus"></i> Add Photos
+                        </button>
+                    </div>
+                    <div class="media-grid" id="photosGrid">
+                        ${renderPhotos()}
+                    </div>
+                </div>
+                
+                <!-- Video Section -->
+                <div class="media-section">
+                    <div class="section-title">
+                        <span>90-Second Video Profile</span>
+                        <button class="add-media-btn" onclick="openModal('uploadVideoModal')">
+                            <i class="fas fa-plus"></i> Add Video
+                        </button>
+                    </div>
+                    <div class="media-grid">
+                        <div class="media-item" id="videoContainer" onclick="openModal('uploadVideoModal')">
+                            ${currentProfile.video ? 
+                                `<video src="${currentProfile.video}" style="width: 100%; height: 100%; object-fit: cover;"></video>
+                                 <button class="remove-btn" onclick="removeVideo(event)">
+                                     <i class="fas fa-times"></i>
+                                 </button>` :
+                                `<i class="fas fa-video"></i>
+                                 <span>Add 90-second video</span>`
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Business/Service Feature -->
+                <div class="business-section">
+                    <div class="business-toggle">
+                        <div>
+                            <h3 style="color: var(--light); margin-bottom: 0.25rem;">Business/Service Feature</h3>
+                            <p style="color: var(--gray-400); font-size: 0.9rem;">
+                                Showcase your business or services on your profile
+                            </p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="businessToggle" ${currentProfile.businessInfo ? 'checked' : ''} onchange="toggleBusinessFeature()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="business-form" id="businessForm" style="${currentProfile.businessInfo ? 'display: block;' : 'display: none;'}">
+                        <div class="form-group">
+                            <label class="form-label">Business/Service Name</label>
+                            <input type="text" class="form-input" id="businessName" value="${currentProfile.businessInfo?.name || ''}" placeholder="Enter business name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-textarea" id="businessDescription" placeholder="Describe your business or service">${currentProfile.businessInfo?.description || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact Email/Phone</label>
+                            <input type="text" class="form-input" id="businessContact" value="${currentProfile.businessInfo?.contact || ''}" placeholder="Contact details">
+                        </div>
+                        <button class="btn" onclick="saveBusinessInfo()">
+                            <i class="fas fa-save"></i> Save Business Info
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Display Business Info if exists -->
+                ${currentProfile.businessInfo ? `
+                    <div class="business-card">
+                        <h4>${currentProfile.businessInfo.name}</h4>
+                        <p>${currentProfile.businessInfo.description}</p>
+                        <div class="business-contact">
+                            <i class="fas fa-envelope"></i>
+                            <span>${currentProfile.businessInfo.contact}</span>
+                        </div>
+                        <p style="color: var(--gray-400); font-size: 0.8rem; margin-top: 0.5rem;">
+                            <i class="fas fa-info-circle"></i> This business info is visible to other users on your profile
+                        </p>
+                    </div>
+                ` : ''}
+            `;
+        }
+        
+        function renderPhotos() {
+            let html = '';
+            
+            // Render existing photos
+            if (currentProfile.photos && currentProfile.photos.length > 0) {
+                currentProfile.photos.forEach((photo, index) => {
+                    html += `
+                        <div class="media-item">
+                            <img src="${photo}" alt="Photo ${index + 1}">
+                            <button class="remove-btn" onclick="removePhoto(${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Add empty slots
+            const photoCount = currentProfile.photos ? currentProfile.photos.length : 0;
+            const emptySlots = 8 - photoCount;
+            
+            for (let i = 0; i < emptySlots; i++) {
+                html += `
+                    <div class="media-item" onclick="openModal('uploadPhotoModal')">
+                        <i class="fas fa-plus"></i>
+                        <span>Add Photo</span>
+                    </div>
+                `;
+            }
+            
+            return html;
+        }
+        
+        // Load Discover Page - SIMPLE
+        function loadDiscoverPage() {
+            const container = document.getElementById('discoverContent');
+            
+            if (sampleUsers.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--gray-400);">No users to discover at the moment.</div>';
+                return;
+            }
+            
+            // Get the first user to display
+            const user = sampleUsers[0];
+            
+            container.innerHTML = `
+                <div class="user-card">
+                    <div class="user-photos">
+                        ${user.photos.map((photo, index) => `
+                            <img src="${photo}" class="user-photo ${index === 0 ? 'active' : ''}" alt="Photo ${index + 1}">
+                        `).join('')}
+                        
+                        <div class="photo-nav">
+                            <div class="nav-btn prev-btn" onclick="prevPhoto()">
+                                <i class="fas fa-chevron-left"></i>
+                            </div>
+                            <div class="nav-btn next-btn" onclick="nextPhoto()">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="photo-dots">
+                            ${user.photos.map((_, index) => `
+                                <div class="dot ${index === 0 ? 'active' : ''}" onclick="goToPhoto(${index})"></div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="user-info">
+                        <div class="user-name">${user.name}, ${user.age}</div>
+                        <div class="user-age">${user.location}</div>
+                        
+                        <div class="user-bio">${user.bio}</div>
+                        
+                        <div class="interests">
+                            ${user.interests.map(interest => `
+                                <div class="interest-tag">${interest}</div>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- BUSINESS INFO SECTION FOR OTHER USERS TO SEE -->
+                        ${user.businessInfo ? `
+                            <div class="business-card">
+                                <h4>${user.businessInfo.name}</h4>
+                                <p>${user.businessInfo.description}</p>
+                                <div class="business-contact">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>${user.businessInfo.contact}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${user.video ? `
+                            <div class="video-player">
+                                <video controls>
+                                    <source src="${user.video}" type="video/mp4">
+                                </video>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="action-buttons">
+                            <button class="btn like-btn" onclick="likeUser(${user.id})">
+                                <i class="fas fa-heart"></i> Like
+                            </button>
+                            <button class="btn whatsapp-btn" onclick="openWhatsAppDirect('${user.name}', '${user.phone}')">
+                                <i class="fab fa-whatsapp"></i> Connect
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Photo navigation
+        let currentPhotoIndex = 0;
+        
+        function prevPhoto() {
+            const photos = document.querySelectorAll('.user-photo');
+            const dots = document.querySelectorAll('.dot');
+            
+            currentPhotoIndex--;
+            if (currentPhotoIndex < 0) {
+                currentPhotoIndex = photos.length - 1;
+            }
+            
+            photos.forEach((photo, index) => {
+                photo.classList.toggle('active', index === currentPhotoIndex);
+            });
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPhotoIndex);
+            });
+        }
+        
+        function nextPhoto() {
+            const photos = document.querySelectorAll('.user-photo');
+            const dots = document.querySelectorAll('.dot');
+            
+            currentPhotoIndex++;
+            if (currentPhotoIndex >= photos.length) {
+                currentPhotoIndex = 0;
+            }
+            
+            photos.forEach((photo, index) => {
+                photo.classList.toggle('active', index === currentPhotoIndex);
+            });
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentPhotoIndex);
+            });
+        }
+        
+        function goToPhoto(index) {
+            const photos = document.querySelectorAll('.user-photo');
+            const dots = document.querySelectorAll('.dot');
+            
+            currentPhotoIndex = index;
+            
+            photos.forEach((photo, i) => {
+                photo.classList.toggle('active', i === index);
+            });
+            
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Like User
+        function likeUser(userId) {
+            const user = sampleUsers.find(u => u.id === userId);
+            if (user) {
+                alert(`You liked ${user.name}!`);
+                
+                // Show match modal sometimes
+                if (Math.random() > 0.5) {
+                    document.getElementById('matchUserName').textContent = user.name;
+                    document.getElementById('matchUserPhone').textContent = user.phone;
+                    openModal('matchModal');
+                }
+            }
+        }
+        
+        // Load Matches Page - SIMPLE
+        function loadMatchesPage() {
+            const container = document.getElementById('matchesList');
+            
+            // Filter to show users with business info as matches
+            const usersWithBusiness = sampleUsers.filter(user => user.businessInfo);
+            
+            if (usersWithBusiness.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--gray-400);">No matches yet. Start discovering people!</div>';
+                return;
+            }
+            
+            let html = '';
+            usersWithBusiness.forEach(user => {
+                html += `
+                    <div class="match-card">
+                        <img src="${user.photos[0]}" 
+                             class="match-photo">
+                        <div style="font-weight: bold; color: var(--light);">${user.name}</div>
+                        <div style="color: var(--gray-400); font-size: 0.875rem;">${user.age}</div>
+                        ${user.businessInfo ? `
+                            <div style="color: var(--primary); font-size: 0.75rem; margin: 0.25rem 0;">
+                                <i class="fas fa-briefcase"></i> ${user.businessInfo.name}
+                            </div>
+                        ` : ''}
+                        <button class="btn" onclick="openWhatsAppDirect('${user.name}', '${user.phone}')" style="margin-top: 0.75rem; padding: 0.5rem; font-size: 0.875rem;">
+                            <i class="fab fa-whatsapp"></i> Connect
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Open modal
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            
+            // Pre-fill edit modal
+            if (modalId === 'editProfileModal' && currentProfile) {
+                document.getElementById('editName').value = currentProfile.name || '';
+                document.getElementById('editBio').value = currentProfile.bio || '';
+                document.getElementById('editAge').value = currentProfile.age || '';
+                document.getElementById('editLocation').value = currentProfile.location || '';
+                document.getElementById('editInterests').value = currentProfile.interests ? currentProfile.interests.join(', ') : '';
+            }
+            
+            // Pre-fill business modal
+            if (modalId === 'uploadPhotoModal' && currentProfile?.businessInfo) {
+                document.getElementById('businessName').value = currentProfile.businessInfo.name || '';
+                document.getElementById('businessDescription').value = currentProfile.businessInfo.description || '';
+                document.getElementById('businessContact').value = currentProfile.businessInfo.contact || '';
+            }
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Save Profile
+        function saveProfile() {
+            currentProfile.name = document.getElementById('editName').value.trim();
+            currentProfile.bio = document.getElementById('editBio').value.trim();
+            currentProfile.age = document.getElementById('editAge').value;
+            currentProfile.location = document.getElementById('editLocation').value.trim();
+            currentProfile.interests = document.getElementById('editInterests').value
+                .split(',')
+                .map(i => i.trim())
+                .filter(i => i.length > 0);
+            
+            localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+            loadProfilePage();
+            closeModal('editProfileModal');
+            alert('Profile updated successfully!');
+        }
+        
+        // Toggle Business Feature
+        function toggleBusinessFeature() {
+            const toggle = document.getElementById('businessToggle');
+            const form = document.getElementById('businessForm');
+            
+            if (toggle.checked) {
+                form.style.display = 'block';
+                // Auto-fill if we have business info
+                if (currentProfile.businessInfo) {
+                    document.getElementById('businessName').value = currentProfile.businessInfo.name || '';
+                    document.getElementById('businessDescription').value = currentProfile.businessInfo.description || '';
+                    document.getElementById('businessContact').value = currentProfile.businessInfo.contact || '';
+                }
+            } else {
+                form.style.display = 'none';
+                // Clear business info if toggled off
+                currentProfile.businessInfo = null;
+                localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+                loadProfilePage();
+            }
+        }
+        
+        // Save Business Info
+        function saveBusinessInfo() {
+            currentProfile.businessInfo = {
+                name: document.getElementById('businessName').value.trim(),
+                description: document.getElementById('businessDescription').value.trim(),
+                contact: document.getElementById('businessContact').value.trim()
+            };
+            
+            localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+            alert('Business info saved! This will be visible to other users on your profile.');
+            loadProfilePage();
+            closeModal('editProfileModal');
+        }
+        
+        // Upload Photos
+        function uploadPhotos() {
+            const input = document.getElementById('photoInput');
+            
+            if (!input.files.length) {
+                alert('Please select photos to upload');
+                return;
+            }
+            
+            // For demo, just add sample photos
+            if (!currentProfile.photos) currentProfile.photos = [];
+            
+            // Add sample photos for demo
+            const samplePhotos = [
+                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop',
+                'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop'
+            ];
+            
+            // Add 2 sample photos if we have space
+            const remainingSlots = 8 - currentProfile.photos.length;
+            for (let i = 0; i < Math.min(2, remainingSlots); i++) {
+                currentProfile.photos.push(samplePhotos[i % samplePhotos.length]);
+            }
+            
+            localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+            closeModal('uploadPhotoModal');
+            loadProfilePage();
+            alert('Photos uploaded successfully!');
+        }
+        
+        // Remove Photo
+        function removePhoto(index) {
+            if (confirm('Remove this photo?')) {
+                currentProfile.photos.splice(index, 1);
+                localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+                loadProfilePage();
+            }
+        }
+        
+        // Upload Video
+        function uploadVideo() {
+            // For demo, add a sample video
+            currentProfile.video = 'https://assets.mixkit.co/videos/preview/mixkit-man-exercising-in-the-park-39858-large.mp4';
+            localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+            loadProfilePage();
+            closeModal('uploadVideoModal');
+            alert('Video uploaded successfully!');
+        }
+        
+        // Remove Video
+        function removeVideo(event) {
+            event.stopPropagation();
+            if (confirm('Remove video?')) {
+                currentProfile.video = null;
+                localStorage.setItem('seeu_profile', JSON.stringify(currentProfile));
+                loadProfilePage();
+            }
+        }
+        
+        // Open WhatsApp Direct
+        function openWhatsAppDirect(name, phone) {
+            const cleanPhone = phone.replace(/[^\d+]/g, '');
+            const message = `Hi ${name}! 👋 I saw your profile on See U. Let's chat!`;
+            const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappUrl, '_blank');
+        }
+        
+        // Open WhatsApp from Match Modal
+        function openWhatsApp() {
+            const phone = document.getElementById('matchUserPhone').textContent;
+            const name = document.getElementById('matchUserName').textContent;
+            
+            openWhatsAppDirect(name, phone);
+            closeModal('matchModal');
+        }
+        
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                currentUser = null;
+                currentProfile = null;
+                localStorage.removeItem('seeu_user');
+                localStorage.removeItem('seeu_profile');
+                showScreen('signinScreen');
+            }
+        }
+        
+        // Make functions globally available
+        window.showScreen = showScreen;
+        window.signIn = signIn;
+        window.signUp = signUp;
+        window.useDemo = useDemo;
+        window.processPayment = processPayment;
+        window.logout = logout;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.saveProfile = saveProfile;
+        window.uploadPhotos = uploadPhotos;
+        window.removePhoto = removePhoto;
+        window.uploadVideo = uploadVideo;
+        window.removeVideo = removeVideo;
+        window.toggleBusinessFeature = toggleBusinessFeature;
+        window.saveBusinessInfo = saveBusinessInfo;
+        window.likeUser = likeUser;
+        window.prevPhoto = prevPhoto;
+        window.nextPhoto = nextPhoto;
+        window.goToPhoto = goToPhoto;
+        window.openWhatsApp = openWhatsApp;
+        window.openWhatsAppDirect = openWhatsAppDirect;
+        
+        console.log('See U app ready! Business features enabled!');
+    </script>
+</body>
+</html>
